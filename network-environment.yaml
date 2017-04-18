@@ -1,0 +1,53 @@
+resource_registry:
+  OS::TripleO::Compute::Net::SoftwareConfig: /home/stack/templates/nic-configs/computeovsdpdk.yaml
+  OS::TripleO::Controller::Net::SoftwareConfig: /home/stack/templates/nic-configs/controller.yaml
+  OS::TripleO::NodeUserData: /home/stack/templates/first-boot.yaml
+  OS::TripleO::NodeExtraConfigPost: /home/stack/templates/post-install.yaml
+
+parameter_defaults:
+  ControlPlaneDefaultRoute: "''"
+  ControlPlaneSubnetCidr: "24"
+  DnsServers: ["172.28.71.66"]
+  EC2MetadataIp: "172.28.71.78"
+  ExternalAllocationPools: [{'start': '172.28.75.100', 'end': '172.28.75.120'}]
+  ExternalNetCidr: "172.28.75.0/24"
+  #ExternalNetworkVlanID: 75 
+  NeutronExternalNetworkBridge: "''"
+  ExternalInterfaceDefaultRoute: "192.168.75.1"
+
+  InternalApiNetCidr: 172.28.72.0/24
+  StorageNetCidr: 172.28.73.0/24
+  StorageMgmtNetCidr: 172.28.74.0/24
+  TenantNetCidr: 172.28.76.0/24
+  InternalApiNetworkVlanID: 72
+  StorageNetworkVlanID: 73
+  StorageMgmtNetworkVlanID: 74
+  TenantNetworkVlanID: 76
+  InternalApiAllocationPools: [{'start': '172.28.72.100', 'end': '172.28.72.120'}]
+  StorageAllocationPools: [{'start': '172.28.73.100', 'end': '172.28.73.120'}]
+  StorageMgmtAllocationPools: [{'start': '172.28.74.100', 'end': '172.28.74.120'}]
+  TenantAllocationPools: [{'start': '172.28.76.100', 'end': '172.28.76.120'}]
+
+# OvercloudComputeFlavor: "compute"
+  OvercloudControlFlavor: "control"
+# ComputeCount: 1
+
+  NeutronBridgeMappings: 'datacentre:br-ex,dpdk:br-link'
+  NeutronNetworkVLANRanges: "datacentre:75:75,dpdk:77:77"
+  NeutronNetworkType: "vxlan"
+  NeutronTunnelTypes: "vxlan"
+  HostCpusList: "'0,1,15,16,30,31,45,46'"
+  NeutronDpdkCoreList: "'2,3,17,18,32,33,47,48'"
+  NeutronDpdkMemoryChannels: "4"
+
+  NeutronDatapathType: "netdev"
+  NeutronVhostuserSocketDir: "/var/run/openvswitch"
+  NeutronDpdkSocketMemory: "'1024,1024,1024,1024'"
+  NeutronDpdkDriverType: "vfio-pci"
+  NovaReservedHostMemory: 4096
+  NovaVcpuPinSet: ['4-14','19-29','34-44','49-119']
+  NovaSchedulerDefaultFilters: "RamFilter,ComputeFilter,AvailabilityZoneFilter,ComputeCapabilitiesFilter,ImagePropertiesFilter,PciPassthroughFilter,NUMATopologyFilter,AggregateInstanceExtraSpecsFilter"
+  ComputeKernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=64 intel_iommu=on isolcpus=2-14,17-29,32-44,47-119"
+
+  ComputeExtraConfig:
+    neutron::agents::ml2::ovs::enable_dpdk: false

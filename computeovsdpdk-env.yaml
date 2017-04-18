@@ -1,0 +1,19 @@
+resource_registry:
+  # Port assignments for the ovs dpdk compute role
+  OS::TripleO::ComputeOvsDpdk::Ports::ExternalPort: /usr/share/openstack-tripleo-heat-templates/network/ports/noop.yaml
+  OS::TripleO::ComputeOvsDpdk::Ports::InternalApiPort: /usr/share/openstack-tripleo-heat-templates/network/ports/internal_api.yaml
+  OS::TripleO::ComputeOvsDpdk::Ports::StoragePort: /usr/share/openstack-tripleo-heat-templates/network/ports/storage.yaml
+  OS::TripleO::ComputeOvsDpdk::Ports::StorageMgmtPort: /usr/share/openstack-tripleo-heat-templates/network/ports/noop.yaml
+  OS::TripleO::ComputeOvsDpdk::Ports::TenantPort: /usr/share/openstack-tripleo-heat-templates/network/ports/tenant.yaml
+  OS::TripleO::ComputeOvsDpdk::Net::SoftwareConfig: nic-configs/computeovsdpdk.yaml
+  # service definition for the ovs dpdk agent role (
+  # see /usr/share/openstack-tripleo-heat-templates/environments/neutron-ovs-dpdk.yaml
+  OS::TripleO::Services::ComputeNeutronOvsDpdkAgent: /usr/share/openstack-tripleo-heat-templates/puppet/services/neutron-ovs-dpdk-agent.yaml
+
+parameter_defaults:
+  # The following settings are for DPDK flavor and node count
+  OvercloudComputeOvsDpdkFlavor: computeovsdpdk
+  ComputeOvsDpdkCount: 2
+
+  # set this the same as HostnameFormatDefault of the DPDK role in roles_data_dpdk.yaml
+  ComputeOvsDpdkHostnameFormat: '%stackname%-compute-dpdk-%index%'
