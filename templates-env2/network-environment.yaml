@@ -1,0 +1,73 @@
+resource_registry:
+  OS::TripleO::Compute::Net::SoftwareConfig: /home/stack/templates/nic-configs/computeovsdpdk.yaml
+  OS::TripleO::Controller::Net::SoftwareConfig: /home/stack/templates/nic-configs/controller.yaml
+  OS::TripleO::CephStorage::Net::SoftwareConfig: /home/stack/templates/nic-configs/ceph-storage.yaml
+  OS::TripleO::NodeUserData: /home/stack/templates/firstboot/first-boot.yaml
+  OS::TripleO::NodeExtraConfigPost: /home/stack/templates/post-install.yaml
+
+parameter_defaults:
+
+  # Internal API used for private OpenStack Traffic
+  InternalApiNetCidr: 172.28.42.0/24
+  InternalApiAllocationPools: [{'start': '172.28.42.100', 'end': '172.28.42.120'}]
+  InternalApiNetworkVlanID: 42
+
+  # Tenant Network Traffic - will be used for VXLAN over VLAN
+  TenantNetCidr: 192.168.21.128/25
+  TenantAllocationPools: [{'start': '192.168.21.200', 'end': '192.168.21.220'}]
+  TenantNetworkVlanID: 40
+
+  # Public Storage Access - e.g. Nova/Glance <--> Ceph
+  StorageNetCidr: 172.28.43.0/24
+  StorageAllocationPools: [{'start': '172.28.43.100', 'end': '172.28.43.120'}]
+  StorageNetworkVlanID: 43
+
+  # Private Storage Access - i.e. Ceph background cluster/replication
+  StorageMgmtNetCidr: 172.28.44.0/24
+  StorageMgmtAllocationPools: [{'start': '172.28.44.100', 'end': '172.28.44.120'}]
+  StorageMgmtNetworkVlanID: 44
+
+  # External Networking Access - Public API Access
+  ExternalNetCidr: 192.168.21.64/26
+  ExternalAllocationPools: [{'start': '192.168.21.81', 'end': '192.168.21.91'}]
+  ExternalNetworkVlanID: 39
+  ExternalInterfaceDefaultRoute: "192.168.21.65"
+
+  # Add in configuration for the Control Plane
+  ControlPlaneSubnetCidr: "24"
+  ControlPlaneDefaultRoute: "''"
+  EC2MetadataIp: 172.28.41.69
+  DnsServers: ["172.28.41.66"]
+  LinuxBondInterfaceOptions: "mode=802.3ad miimon=100 lacp_rate=fast"
+  
+  PublicVirtualFixedIPs: [{'ip_address':'192.168.21.71'}]
+ 
+# OvercloudComputeFlavor: "compute"
+  OvercloudControlFlavor: "control"
+# ComputeCount: 1
+
+  NeutronBridgeMappings: 'datacentre:br-ex,dpdk:br-link'
+  NeutronNetworkVLANRanges: "datacentre:39:39,dpdk:61:61"
+  NeutronNetworkType: "vxlan"
+  NeutronTunnelTypes: "vxlan"
+  HostCpusList: "'0,1,15,16,30,31,45,46'"
+# Select cores from NUMA node 3, matching dpdk pci device
+  NeutronDpdkCoreList: "'47,48,49,50,51'"
+  NeutronDpdkMemoryChannels: "4"
+
+  NeutronDatapathType: "netdev"
+  NeutronVhostuserSocketDir: "/var/run/openvswitch"
+  NeutronDpdkSocketMemory: "'1024,1024,1024,1024'"
+  NeutronDpdkDriverType: "vfio-pci"
+  NovaReservedHostMemory: 4096
+# Confine instance CPUs to NUMA node 3 (45-59,105-119), matching dpdk pci device
+  NovaVcpuPinSet: ['105-119']
+
+# HostIsolatedCoreList = NeutronDpdkCoreList + NovaVcpuPinSet
+  HostIsolatedCoreList: ['47-59','105-119']
+
+  NovaSchedulerDefaultFilters: "RamFilter,ComputeFilter,AvailabilityZoneFilter,ComputeCapabilitiesFilter,ImagePropertiesFilter,PciPassthroughFilter,NUMATopologyFilter,AggregateInstanceExtraSpecsFilter"
+  ComputeKernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=256 intel_iommu=on isolcpus=2-14,17-29,32-44,47-119"
+
+  ComputeExtraConfig:
+    neutron::agents::ml2::ovs::enable_dpdk: false
